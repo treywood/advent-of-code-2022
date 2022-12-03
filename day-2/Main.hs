@@ -1,6 +1,7 @@
 module Main where
 
-import           Utils (getInput, run)
+import           Data.Maybe (mapMaybe)
+import           Utils      (getInput, run)
 
 data Move = Rock | Paper | Scissors
 data Outcome = Lose | Draw | Win
@@ -20,21 +21,23 @@ instance Read Outcome where
 main :: IO ()
 main = run $ do
   input <- getInput
-  return $ process (parse $ lines input)
+  return $ tabulate (lines input)
   where
-    parse :: [String] -> [(Move, Outcome)]
-    parse = map (\line -> let [w1, w2] = words line in (read w1, read w2))
+    tabulate :: [String] -> Int
+    tabulate = sum . (map grade) . (mapMaybe parse)
 
-    process :: [(Move, Outcome)] -> Int
-    process = sum . (map grade)
-      where
-        grade :: (Move, Outcome) -> Int
-        grade (Rock, Lose)     = 3 + 0
-        grade (Paper, Lose)    = 1 + 0
-        grade (Scissors, Lose) = 2 + 0
-        grade (Rock, Draw)     = 1 + 3
-        grade (Paper, Draw)    = 2 + 3
-        grade (Scissors, Draw) = 3 + 3
-        grade (Rock, Win)      = 2 + 6
-        grade (Paper, Win)     = 3 + 6
-        grade (Scissors, Win)  = 1 + 6
+    parse :: String -> Maybe (Move, Outcome)
+    parse line = case (words line) of
+                    [w1, w2] -> Just (read w1, read w2)
+                    _        -> Nothing
+
+    grade :: (Move, Outcome) -> Int
+    grade (Rock, Lose)     = 3 + 0
+    grade (Paper, Lose)    = 1 + 0
+    grade (Scissors, Lose) = 2 + 0
+    grade (Rock, Draw)     = 1 + 3
+    grade (Paper, Draw)    = 2 + 3
+    grade (Scissors, Draw) = 3 + 3
+    grade (Rock, Win)      = 2 + 6
+    grade (Paper, Win)     = 3 + 6
+    grade (Scissors, Win)  = 1 + 6
