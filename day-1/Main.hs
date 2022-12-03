@@ -1,14 +1,13 @@
 module Main where
 
 import           Data.List (sort)
-import           Utils     (getInput)
+import           Utils     (getInput, run)
 
 main :: IO ()
-main = do
+main = run $ do
   input <- getInput
   let (elfCals, _) = foldl calc ([], 0) (lines input)
-  let ans = sum $ take 3 ((reverse . sort) elfCals)
-  putStrLn (show ans)
+  return $ sum (take 3 ((reverse . sort) elfCals))
   where
     calc :: ([Int],Int) -> String -> ([Int],Int)
     calc (m, acc) ""   = (acc : m, 0)

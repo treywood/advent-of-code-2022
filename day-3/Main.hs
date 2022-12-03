@@ -2,17 +2,16 @@ module Main where
 
 import           Data.List       (elemIndex, intersect)
 import           Data.List.Split (chunksOf)
-import           Utils           (getInput)
+import           Utils           (getInput, run)
 
 priorities :: [Char]
 priorities = ['a' .. 'z'] ++ ['A' .. 'Z']
 
 main :: IO ()
-main = do
+main = run $ do
   input <- getInput
   let groups = chunksOf 3 (lines input)
-  let ans = sum $ (map prioritize groups)
-  putStrLn (show ans)
+  return $ sum (map prioritize groups)
   where
     prioritize :: [String] -> Int
     prioritize [g1,g2,g3] = score badge

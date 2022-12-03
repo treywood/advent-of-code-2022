@@ -9,3 +9,8 @@ getInput = do
   handle <- openFile filename ReadMode
   input <- hGetContents handle
   return input
+
+run :: Show a => IO a -> IO ()
+run prog = do
+  result <- prog
+  putStrLn (show result)

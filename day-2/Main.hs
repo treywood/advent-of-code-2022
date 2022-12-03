@@ -1,6 +1,6 @@
 module Main where
 
-import           Utils (getInput)
+import           Utils (getInput, run)
 
 data Move = Rock | Paper | Scissors
 data Outcome = Lose | Draw | Win
@@ -18,10 +18,9 @@ instance Read Outcome where
   readsPrec _ _   = undefined
 
 main :: IO ()
-main = do
+main = run $ do
   input <- getInput
-  let ans = process (parse $ lines input)
-  putStrLn (show ans)
+  return $ process (parse $ lines input)
   where
     parse :: [String] -> [(Move, Outcome)]
     parse = map (\line -> let [w1, w2] = words line in (read w1, read w2))
