@@ -1,18 +1,15 @@
 module Main where
 
-import           Data.List          (elemIndex, intersect)
-import           Data.List.Split    (chunksOf)
-import           System.Environment
-import           System.IO
+import           Data.List       (elemIndex, intersect)
+import           Data.List.Split (chunksOf)
+import           Utils           (getInput)
 
 priorities :: [Char]
 priorities = ['a' .. 'z'] ++ ['A' .. 'Z']
 
 main :: IO ()
 main = do
-  [filename] <- getArgs
-  handle <- openFile filename ReadMode
-  input <- hGetContents handle
+  input <- getInput
   let groups = chunksOf 3 (lines input)
   let ans = sum $ (map prioritize groups)
   putStrLn (show ans)

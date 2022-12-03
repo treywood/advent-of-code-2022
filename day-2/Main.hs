@@ -1,7 +1,6 @@
 module Main where
 
-import           System.Environment
-import           System.IO
+import           Utils (getInput)
 
 data Move = Rock | Paper | Scissors
 data Outcome = Lose | Draw | Win
@@ -20,9 +19,7 @@ instance Read Outcome where
 
 main :: IO ()
 main = do
-  [filename] <- getArgs
-  handle <- openFile filename ReadMode
-  input <- hGetContents handle
+  input <- getInput
   let ans = process (parse $ lines input)
   putStrLn (show ans)
   where
