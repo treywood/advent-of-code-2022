@@ -43,3 +43,10 @@ executable day-4
     build-depends: 
       regex-compat ^>= 0.95.2.1,
       split ^>= 0.2.3.5,
+
+executable day-5
+    import:           aoc-day
+    hs-source-dirs:   day-5
+    main-is:          Main.hs
+    build-depends:
+      regex-compat ^>= 0.95.2.1,
