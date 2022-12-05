@@ -7,7 +7,6 @@ author:             Trey Wood
 maintainer:         edwinjwood3rd@gmail.com
 category:           Tinkering
 build-type:         Simple
-extra-doc-files:    CHANGELOG.md
 
 common aoc-day
     ghc-options: -Wall
