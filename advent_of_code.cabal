@@ -12,14 +12,14 @@ extra-doc-files:    CHANGELOG.md
 common aoc-day
     ghc-options: -Wall
     build-depends:
-        base ^>=4.16.1.0,
+        base ^>=4.16.0.0,
         advent-of-code:utils,
     default-language: GHC2021
 
 library utils
     exposed-modules: Utils
     hs-source-dirs: src
-    build-depends: base ^>=4.16.1.0,
+    build-depends: base ^>=4.16.0.0,
 
 executable day-1
     import:           aoc-day
@@ -36,3 +36,11 @@ executable day-3
     hs-source-dirs:   day-3
     main-is:          Main.hs
     build-depends:    split ^>= 0.2.3.5,
+
+executable day-4
+    import:           aoc-day
+    hs-source-dirs:   day-4
+    main-is:          Main.hs
+    build-depends: 
+      regex-compat ^>= 0.95.2.1,
+      split ^>= 0.2.3.5,
