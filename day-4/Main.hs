@@ -1,7 +1,7 @@
 module Main where
 
 import Data.List.Split (splitOn)
-import Data.Maybe (catMaybes)
+import Data.Maybe (mapMaybe)
 import Text.Regex (matchRegex, mkRegex)
 import Utils (getInput, run)
 
@@ -17,7 +17,7 @@ main = run $ do
     return (count doesOverlap pairs)
   where
     getPairs :: [String] -> [(Range, Range)]
-    getPairs = catMaybes . (map parsePair) . (map $ splitOn ",")
+    getPairs = (mapMaybe parsePair) . (map $ splitOn ",")
 
     parsePair :: [String] -> Maybe (Range, Range)
     parsePair [p1, p2] = (,) <$> parseRange p1 <*> parseRange p2
