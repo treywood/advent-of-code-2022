@@ -11,14 +11,14 @@ build-type:         Simple
 common aoc-day
     ghc-options: -Wall
     build-depends:
-        base ^>=4.16.0.0,
+        base ^>=4.17.0.0,
         advent-of-code:utils,
     default-language: GHC2021
 
 library utils
     exposed-modules: Utils
     hs-source-dirs: src
-    build-depends: base ^>=4.16.0.0,
+    build-depends: base ^>=4.17.0.0,
 
 executable day-1
     import:           aoc-day
