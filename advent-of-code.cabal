@@ -48,10 +48,17 @@ executable day-5
     import:           aoc-day
     hs-source-dirs:   day-5
     main-is:          Main.hs
-    build-depends:
-      regex-compat ^>= 0.95.2.1,
+    build-depends:    regex-compat
 
 executable day-6
     import:           aoc-day
     hs-source-dirs:   day-6
     main-is:          Main.hs
+
+executable day-7
+    import:           aoc-day
+    hs-source-dirs:   day-7
+    main-is:          Main.hs
+    build-depends:
+        containers,
+        mtl
