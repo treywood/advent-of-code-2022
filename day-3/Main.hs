@@ -16,7 +16,7 @@ main = run $ do
     prioritize :: [String] -> Int
     prioritize [g1, g2, g3] = score badge
       where
-        badge : _ = intersect (intersect g1 g2) g3
+        badge = head $ intersect (intersect g1 g2) g3
         score :: Char -> Int
         score c = maybe 0 (+ 1) (c `elemIndex` priorities)
     prioritize _ = 0

@@ -34,15 +34,15 @@ executable day-3
     import:           aoc-day
     hs-source-dirs:   day-3
     main-is:          Main.hs
-    build-depends:    split ^>= 0.2.3.5,
+    build-depends:    split
 
 executable day-4
     import:           aoc-day
     hs-source-dirs:   day-4
     main-is:          Main.hs
     build-depends: 
-      regex-compat ^>= 0.95.2.1,
-      split ^>= 0.2.3.5,
+      regex-compat,
+      split
 
 executable day-5
     import:           aoc-day
@@ -62,3 +62,8 @@ executable day-7
     build-depends:
         containers,
         mtl
+
+executable day-8
+    import:           aoc-day
+    hs-source-dirs:   day-8
+    main-is:          Main.hs
