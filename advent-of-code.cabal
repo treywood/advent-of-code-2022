@@ -67,3 +67,11 @@ executable day-8
     import:           aoc-day
     hs-source-dirs:   day-8
     main-is:          Main.hs
+
+executable day-9
+    import:           aoc-day
+    hs-source-dirs:   day-9
+    main-is:          Main.hs
+    build-depends:
+        containers,
+        mtl
