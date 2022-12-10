@@ -1,11 +1,11 @@
 module Main where
 
 import Control.Monad.State
-import Data.Set (Set, insert, singleton)
+import Data.List
 import Utils
 
 type Point = (Int,Int)
-type ParserState = ([Point], Set Point, [Move])
+type ParserState = ([Point], [Point], [Move])
 
 data Move = Move Char Int deriving (Show)
 instance Read Move where
@@ -18,11 +18,10 @@ origin = (0,0)
 main :: IO ()
 main = run $ do
     input <- getInput
-    let rope = take 10 (repeat origin)
-    let initState = (rope, singleton origin, fmap read $ lines input)
+    let rope = replicate 10 origin
+    let initState = (rope, [origin], fmap read $ lines input)
     let ((), (_,ps,_)) = runState runMoves initState
-    -- _ <- mapM putStrLn $ take 100 (map show ps)
-    return $ length ps
+    return $ (length . nub) ps
   where
     runMoves :: State ParserState ()
     runMoves = state $ runMoves'
@@ -33,8 +32,8 @@ main = run $ do
     runMoves' ((h:ts), ps, move:rest) = runState runMoves newState
       where 
         (h',rest') = moveHead h move rest
-        ts' = moveTails h' ts
-        newState = ((h':ts'), insert (last ts') ps, rest')
+        rope = scanl moveTail h' ts
+        newState = (rope, (last rope):ps, rest')
 
     moveHead :: Point -> Move -> [Move] -> (Point,[Move])
     moveHead h (Move _ 0) rest = (h, rest)
@@ -43,14 +42,6 @@ main = run $ do
     moveHead (hx,hy) (Move 'R' n) rest = ((hx + 1, hy), (Move 'R' (n-1)) : rest)
     moveHead (hx,hy) (Move 'L' n) rest = ((hx - 1, hy), (Move 'L' (n-1)) : rest)
     moveHead _ _ _ = undefined
-
-    moveTails :: Point -> [Point] -> [Point]
-    moveTails h ts = moveTails' h ts []
-
-    moveTails' :: Point -> [Point] -> [Point] -> [Point]
-    moveTails' _ [] ts = ts
-    moveTails' h (t:ts) ts' = moveTails' t' ts (ts' ++ [t'])
-      where t' = moveTail h t
 
     moveTail :: Point -> Point -> Point
     moveTail (hx,hy) (tx,ty)
