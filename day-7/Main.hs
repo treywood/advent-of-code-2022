@@ -3,7 +3,7 @@ module Main where
 import Control.Monad.State
 import Data.List (intercalate, isPrefixOf)
 import Data.Map.Lazy as M
-import Data.Maybe (fromMaybe, fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import Utils
 
 data Entry = Dir String | File String Int deriving (Show)
@@ -24,15 +24,15 @@ processLines = state $ processLines'
                 ("$" : "cd" : dir : _) ->
                     let
                         path = cwdStr ++ "/" ++ dir
-                    in
+                     in
                         (dir : cwd, insertWith (\_ v -> v) path [] fs, rest)
                 ("$" : "ls" : _) ->
                     let
                         (entries, (_, _, rest')) = runState parseEntries (cwd, fs, rest)
-                    in
+                     in
                         (cwd, insert cwdStr entries fs, rest')
                 _ -> undefined
-        in
+         in
             runState processLines newState
 
     parseEntries :: State ParserState [Entry]
@@ -40,16 +40,17 @@ processLines = state $ processLines'
         let
             (entryStrs, rest) = break (isPrefixOf "$") input
             entries = fmap (toEntry cwd) entryStrs
-        in
+         in
             (entries, (cwd, fs, rest))
       where
         toEntry :: [String] -> String -> Entry
         toEntry cwd str = case (words str) of
-            ["dir", dir] -> let
-                path = dir : cwd
-                fullPath = intercalate "/" (reverse path)
-              in
-                Dir fullPath
+            ["dir", dir] ->
+                let
+                    path = dir : cwd
+                    fullPath = intercalate "/" (reverse path)
+                 in
+                    Dir fullPath
             [sizeStr, file] -> File file (read sizeStr)
             _ -> undefined
 
@@ -64,7 +65,7 @@ main = run $ do
     return (minimum $ M.filter (>= sizeToFree) dirSizes)
   where
     calcSizes :: FileSystem -> Map String Int
-    calcSizes fs = M.map (dirSize fs) fs 
+    calcSizes fs = M.map (dirSize fs) fs
 
     dirSize :: FileSystem -> [Entry] -> Int
     dirSize fs = sum . fmap (entrySize fs)
