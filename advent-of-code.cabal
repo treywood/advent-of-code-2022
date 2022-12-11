@@ -75,3 +75,10 @@ executable day-9
     build-depends:
         containers,
         mtl
+
+executable day-10
+    import:           aoc-day
+    hs-source-dirs:   day-10
+    main-is:          Main.hs
+    build-depends:
+      split
