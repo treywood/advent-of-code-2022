@@ -82,3 +82,12 @@ executable day-10
     main-is:          Main.hs
     build-depends:
       split
+
+executable day-11
+    import:           aoc-day
+    hs-source-dirs:   day-11
+    main-is:          Main.hs
+    build-depends:
+        containers,
+        megaparsec,
+        split
