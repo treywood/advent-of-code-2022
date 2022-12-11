@@ -26,7 +26,7 @@ main = run $ do
     draw f (x, c, _) = (f x, c + 1, char)
       where
         p = c `mod` 40
-        sprite = [p - 1, p, p + 1]
+        sprite = [p - 1 .. p + 1]
         char =
             if x `elem` sprite
                 then '#'
