@@ -1,17 +1,23 @@
 module Main where
 
-import Utils
+import Text.Megaparsec (some)
+import Text.Megaparsec.Char (alphaNumChar)
+import Utils (Config (..), run)
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    return (startOfPacketMarker input 14 0)
-  where
-    startOfPacketMarker :: String -> Int -> Int -> Int
-    startOfPacketMarker str len i
-        | allDiff (take len str) = i + len
-        | otherwise = startOfPacketMarker (tail str) len (i + 1)
+main =
+    run $
+        Config
+            { parser = some alphaNumChar
+            , run1 = startOfPacketMarker 4 0
+            , run2 = startOfPacketMarker 14 0
+            }
 
+startOfPacketMarker :: Int -> Int -> String -> Int
+startOfPacketMarker len i str
+    | allDiff (take len str) = i + len
+    | otherwise = startOfPacketMarker len (i + 1) (tail str)
+  where
     allDiff :: (Eq a) => [a] -> Bool
     allDiff [] = True
     allDiff [_] = True
