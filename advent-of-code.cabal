@@ -43,9 +43,6 @@ executable day-4
     import:           aoc-day
     hs-source-dirs:   day-4
     main-is:          Main.hs
-    build-depends: 
-      regex-compat,
-      split
 
 executable day-5
     import:           aoc-day

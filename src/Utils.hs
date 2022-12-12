@@ -6,7 +6,7 @@ module Utils where
 import Data.Void
 import System.Environment
 import System.IO
-import Text.Megaparsec (Parsec, errorBundlePretty, runParser, some)
+import Text.Megaparsec (Parsec, ParsecT, errorBundlePretty, runParser, some)
 import Text.Megaparsec.Char (digitChar)
 
 type InputParser = Parsec Void String
@@ -17,7 +17,7 @@ data Config a o1 o2 = Config
     , run2 :: (a -> o2)
     }
 
-integer :: Parsec Void String Int
+integer :: ParsecT Void String m Int
 integer = fmap read (some digitChar)
 
 notImplemented :: a -> String
