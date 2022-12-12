@@ -13,12 +13,15 @@ common aoc-day
     build-depends:
         base ^>=4.17.0.0,
         advent-of-code:utils,
+        megaparsec,
     default-language: GHC2021
 
 library utils
     exposed-modules: Utils
     hs-source-dirs: src
-    build-depends: base ^>=4.17.0.0,
+    build-depends:
+        base ^>=4.17.0.0,
+        megaparsec,
 
 executable day-1
     import:           aoc-day
@@ -90,3 +93,8 @@ executable day-11
     build-depends:
         containers,
         megaparsec
+
+executable day-12
+    import:           aoc-day
+    hs-source-dirs:   day-12
+    main-is:          Main.hs

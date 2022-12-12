@@ -6,7 +6,7 @@ module Main where
 import Data.Function ((&))
 import Data.List (sortOn)
 import Data.Map (Map, elems)
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
 import Data.Void
 import Text.Megaparsec (Parsec, oneOf, runParser, sepBy, some)
@@ -115,7 +115,7 @@ main = do
                 (foldl (processItem m) monkeys m.items)
                     & (M.insert m.index updatedMonkey)
               where
-                updatedMonkey = m {items = [], activity = m.activity + (length m.items)}
+                updatedMonkey = m{items = [], activity = m.activity + (length m.items)}
 
         processItem :: Monkey -> Monkeys -> Int -> Monkeys
         processItem monkey monkeys item = M.update updateTarget tnum monkeys
@@ -127,4 +127,4 @@ main = do
                     else snd monkey.nexts
 
             updateTarget :: Monkey -> Maybe Monkey
-            updateTarget m = Just $ m {items = m.items ++ [newItem]}
+            updateTarget m = Just $ m{items = m.items ++ [newItem]}
