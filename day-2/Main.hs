@@ -1,43 +1,68 @@
 module Main where
 
-import Data.Maybe (mapMaybe)
-import Utils (getInput, run)
-
-data Move = Rock | Paper | Scissors
-data Outcome = Lose | Draw | Win
-
-instance Read Move where
-    readsPrec _ "A" = [(Rock, "")]
-    readsPrec _ "B" = [(Paper, "")]
-    readsPrec _ "C" = [(Scissors, "")]
-    readsPrec _ _ = undefined
-
-instance Read Outcome where
-    readsPrec _ "X" = [(Lose, "")]
-    readsPrec _ "Y" = [(Draw, "")]
-    readsPrec _ "Z" = [(Win, "")]
-    readsPrec _ _ = undefined
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Utils (Config (..), run)
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    return $ tabulate (lines input)
+main =
+    run $
+        Config
+            { parser = sepEndBy pairs newline
+            , run1 = part1
+            , run2 = part2
+            }
   where
-    tabulate :: [String] -> Int
-    tabulate = sum . (map grade) . (mapMaybe parse)
+    pairs = do
+        a <- alphaNumChar
+        space
+        b <- alphaNumChar
+        return (a, b)
 
-    parse :: String -> Maybe (Move, Outcome)
-    parse line = case (words line) of
-        [w1, w2] -> Just (read w1, read w2)
-        _ -> Nothing
+{--
+ A: Rock
+ B: Paper
+ C: Scissors
 
-    grade :: (Move, Outcome) -> Int
-    grade (Rock, Lose) = 3 + 0
-    grade (Paper, Lose) = 1 + 0
-    grade (Scissors, Lose) = 2 + 0
-    grade (Rock, Draw) = 1 + 3
-    grade (Paper, Draw) = 2 + 3
-    grade (Scissors, Draw) = 3 + 3
-    grade (Rock, Win) = 2 + 6
-    grade (Paper, Win) = 3 + 6
-    grade (Scissors, Win) = 1 + 6
+ X: Rock
+ Y: Paper
+ Z: Scissors
+ --}
+part1 :: [(Char, Char)] -> Int
+part1 = sum . (map grade)
+  where
+    grade :: (Char, Char) -> Int
+    grade ('A', 'X') = 1 + 3
+    grade ('A', 'Y') = 2 + 6
+    grade ('A', 'Z') = 3 + 0
+    grade ('B', 'X') = 1 + 0
+    grade ('B', 'Y') = 2 + 3
+    grade ('B', 'Z') = 3 + 6
+    grade ('C', 'X') = 1 + 6
+    grade ('C', 'Y') = 2 + 0
+    grade ('C', 'Z') = 3 + 3
+    grade _ = 0
+
+{--
+ A: Rock
+ B: Paper
+ C: Scissors
+
+ X: Lose
+ Y: Draw
+ Z: Win
+ --}
+part2 :: [(Char, Char)] -> Int
+part2 = sum . (map grade)
+  where
+    grade :: (Char, Char) -> Int
+    grade ('A', 'X') = 3 + 0
+    grade ('A', 'Y') = 1 + 3
+    grade ('A', 'Z') = 2 + 6
+    grade ('B', 'X') = 1 + 0
+    grade ('B', 'Y') = 2 + 3
+    grade ('B', 'Z') = 3 + 6
+    grade ('C', 'X') = 2 + 0
+    grade ('C', 'Y') = 3 + 3
+    grade ('C', 'Z') = 1 + 6
+    grade _ = 0
