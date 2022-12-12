@@ -89,5 +89,4 @@ executable day-11
     main-is:          Main.hs
     build-depends:
         containers,
-        megaparsec,
-        split
+        megaparsec
