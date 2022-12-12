@@ -1,9 +1,8 @@
 module Main where
 
-import Data.List.Split (splitOn)
-import Data.Maybe (mapMaybe)
-import Text.Regex (matchRegex, mkRegex)
-import Utils (getInput, run)
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Utils (Config (..), integer, run)
 
 data Range = Range Int Int deriving (Show)
 
@@ -11,24 +10,33 @@ count :: (a -> Bool) -> [a] -> Int
 count p = sum . (map (\el -> if (p el) then 1 else 0))
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    let pairs = getPairs (lines input)
-    return (count doesOverlap pairs)
+main =
+    run $
+        Config
+            { parser = (sepEndBy parseRanges newline)
+            , run1 = part1
+            , run2 = part2
+            }
   where
-    getPairs :: [String] -> [(Range, Range)]
-    getPairs = (mapMaybe parsePair) . (map $ splitOn ",")
+    parseRanges = do
+        r1 <- parseRange
+        _ <- char ','
+        r2 <- parseRange
+        return (r1, r2)
+    parseRange = do
+        n1 <- integer
+        _ <- char '-'
+        n2 <- integer
+        return $ Range n1 n2
 
-    parsePair :: [String] -> Maybe (Range, Range)
-    parsePair [p1, p2] = (,) <$> parseRange p1 <*> parseRange p2
-    parsePair _ = Nothing
+part1 :: [(Range, Range)] -> Int
+part1 = length . (filter overlaps)
+  where
+    overlaps :: (Range, Range) -> Bool
+    overlaps (Range s1 e1, Range s2 e2) = (s1 >= s2 && e1 <= e2) || (s2 >= s1 && e2 <= e1)
 
-    parseRange :: String -> Maybe Range
-    parseRange str = case (matchRegex pairRegex str) of
-        Just [start, end] -> Just $ Range (read start) (read end)
-        _ -> Nothing
-
-    pairRegex = mkRegex "([0-9]+)-([0-9]+)"
-
-    doesOverlap :: (Range, Range) -> Bool
-    doesOverlap (Range s1 e1, Range s2 e2) = (s1 <= e2 && s1 >= s2) || (s2 <= e1 && s2 >= s1)
+part2 :: [(Range, Range)] -> Int
+part2 = length . (filter overlaps)
+  where
+    overlaps :: (Range, Range) -> Bool
+    overlaps (Range s1 e1, Range s2 e2) = (s1 <= e2 && s1 >= s2) || (s2 <= e1 && s2 >= s1)

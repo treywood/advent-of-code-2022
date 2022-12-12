@@ -35,17 +35,3 @@ part2 = sum . (map grade) . (chunksOf 3)
       where
         badge = (last . map head) $ scanl intersect g1 gs
     grade _ = 0
-
--- main :: IO ()
--- main = run $ do
---     input <- getInput
---     let groups = chunksOf 3 (lines input)
---     return $ sum (map prioritize groups)
---   where
---     prioritize :: [String] -> Int
---     prioritize [g1, g2, g3] = score badge
---       where
---         badge = head $ intersect (intersect g1 g2) g3
---         score :: Char -> Int
---         score c = maybe 0 (+ 1) (c `elemIndex` priorities)
---     prioritize _ = 0
