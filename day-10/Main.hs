@@ -10,7 +10,7 @@ main =
     run $
         Config
             { parser = concat <$> sepBy (addx <|> noop) newline
-            , run1 = putShowLn . foldl signalStrength 0 . zip [1 ..] . scanl (\x f -> f x) 1
+            , run1 = putShowLn . part1
             , run2 = mapM_ putStrLn . part2
             }
   where
@@ -22,10 +22,13 @@ main =
         _ <- string "noop"
         return [id]
 
-signalStrength :: Int -> (Int, Int) -> Int
-signalStrength acc (i, x)
-    | (i - 20) `mod` 40 == 0 = acc + (i * x)
-    | otherwise = acc
+part1 :: [Int -> Int] -> Int
+part1 = foldl signalStrength 0 . zip [1 ..] . scanl (\x f -> f x) 1
+  where
+    signalStrength :: Int -> (Int, Int) -> Int
+    signalStrength acc (i, x)
+        | (i - 20) `mod` 40 == 0 = acc + (i * x)
+        | otherwise = acc
 
 part2 :: [Int -> Int] -> [String]
 part2 =
