@@ -23,16 +23,16 @@ main =
   where
     filesystemParser :: Parser FileSystem
     filesystemParser = do
-        files <- some $ parseCommands []
+        files <- some $ cmds []
         return $
             Prelude.foldl
                 (\m (k, v) -> M.insertWith (++) k v m)
                 M.empty
                 (concat files)
 
-    parseCommands :: Path -> Parser [(String, [Entry])]
-    parseCommands cwd = do
-        entries <- someTill ((cd cwd) <|> (ls cwd)) eof
+    cmds :: Path -> Parser [(String, [Entry])]
+    cmds cwd = do
+        entries <- some ((cd cwd) <|> (ls cwd))
         return (concat entries)
 
     cd :: Path -> Parser [(String, [Entry])]
@@ -42,25 +42,25 @@ main =
         let newpath = case subpath of
                 ".." -> init cwd
                 _ -> cwd ++ [subpath]
-        entries <- parseCommands newpath
+        entries <- cmds newpath
         return entries
 
     ls :: Path -> Parser [(String, [Entry])]
     ls cwd = try $ do
         _ <- string "$ ls" <* newline
-        entries <- some (parseFile cwd <|> parseDir cwd)
+        entries <- some (file cwd <|> dir cwd)
         return entries
 
-    parseFile :: Path -> Parser (String, [Entry])
-    parseFile cwd = try $ do
+    file :: Path -> Parser (String, [Entry])
+    file cwd = try $ do
         filesize <- integer <* space
         filename <- some (alphaNumChar <|> char '.') <* newline
         let cwdStr = (intercalate "/" cwd)
         let fullpath = cwdStr ++ "/" ++ filename
         return (cwdStr, [File fullpath filesize])
 
-    parseDir :: Path -> Parser (String, [Entry])
-    parseDir cwd = try $ do
+    dir :: Path -> Parser (String, [Entry])
+    dir cwd = try $ do
         _ <- string "dir "
         dirname <- some alphaNumChar <* newline
         let cwdStr = (intercalate "/" cwd)
