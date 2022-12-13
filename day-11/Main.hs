@@ -72,10 +72,8 @@ main = do
         parseExpr :: Parsec Void String Expr
         parseExpr = do
             _ <- space >> string "Operation: new =" >> space
-            w1 <- wordToExpr <$> (some alphaNumChar)
-            space
-            op <- oneOf ['*', '+', '-']
-            space
+            w1 <- wordToExpr <$> (some alphaNumChar) <* space
+            op <- oneOf ['*', '+', '-'] <* space
             w2 <- wordToExpr <$> (some alphaNumChar)
             return $ Bin w1 op w2
           where

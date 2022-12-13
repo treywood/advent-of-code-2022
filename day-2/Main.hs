@@ -14,8 +14,7 @@ main =
             }
   where
     pairs = do
-        a <- alphaNumChar
-        space
+        a <- alphaNumChar <* space
         b <- alphaNumChar
         return (a, b)
 

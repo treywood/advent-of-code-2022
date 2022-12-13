@@ -53,8 +53,7 @@ main =
 
     parseFile :: Path -> InputParser (String, [Entry])
     parseFile cwd = try $ do
-        filesize <- integer
-        _ <- space
+        filesize <- integer <* space
         filename <- some (alphaNumChar <|> char '.') <* newline
         let cwdStr = (intercalate "/" cwd)
         let fullpath = cwdStr ++ "/" ++ filename

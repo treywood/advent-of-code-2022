@@ -1,47 +1,44 @@
 module Main where
 
-import Control.Monad.State
-import Data.List
-import Utils
+import Data.List (nub)
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Utils (Config (..), integer, run)
 
 type Point = (Int, Int)
-type ParserState = ([Point], [Point], [Move])
-
-data Move = Move Char Int deriving (Show)
-instance Read Move where
-    readsPrec _ (c : ' ' : n) = [(Move c (read n), "")]
-    readsPrec _ _ = undefined
 
 origin :: Point
 origin = (0, 0)
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    let rope = replicate 10 origin
-    let initState = (rope, [origin], read <$> lines input)
-    let ((), (_, ps, _)) = runState runMoves initState
-    return $ (length . nub) ps
+main =
+    run $
+        Config
+            { parser = concat <$> sepBy parseMoves newline
+            , run1 = length . nub . snd . runMoves [origin, origin]
+            , run2 = length . nub . snd . runMoves (replicate 10 origin)
+            }
   where
-    runMoves :: State ParserState ()
-    runMoves = state $ runMoves'
+    parseMoves = do
+        dir <- oneOf ['U', 'D', 'L', 'R'] <* space
+        num <- integer
+        return $ replicate num dir
 
-    runMoves' :: ParserState -> ((), ParserState)
-    runMoves' s@(_, _, []) = ((), s)
-    runMoves' ([], _, _) = undefined
-    runMoves' ((h : ts), ps, move : rest) = runState runMoves newState
+runMoves :: [Point] -> [Char] -> ([Point], [Point])
+runMoves rope = foldl move (rope, [last rope])
+  where
+    move (h : ts, ps) m = (rope', (last rope') : ps)
       where
-        (h', rest') = moveHead h move rest
-        rope = scanl moveTail h' ts
-        newState = (rope, (last rope) : ps, rest')
+        h' = moveHead h m
+        rope' = scanl moveTail h' ts
+    move _ _ = undefined
 
-    moveHead :: Point -> Move -> [Move] -> (Point, [Move])
-    moveHead h (Move _ 0) rest = (h, rest)
-    moveHead (hx, hy) (Move 'U' n) rest = ((hx, hy + 1), (Move 'U' (n - 1)) : rest)
-    moveHead (hx, hy) (Move 'D' n) rest = ((hx, hy - 1), (Move 'D' (n - 1)) : rest)
-    moveHead (hx, hy) (Move 'R' n) rest = ((hx + 1, hy), (Move 'R' (n - 1)) : rest)
-    moveHead (hx, hy) (Move 'L' n) rest = ((hx - 1, hy), (Move 'L' (n - 1)) : rest)
-    moveHead _ _ _ = undefined
+    moveHead :: Point -> Char -> Point
+    moveHead (hx, hy) 'U' = (hx, hy + 1)
+    moveHead (hx, hy) 'D' = (hx, hy - 1)
+    moveHead (hx, hy) 'R' = (hx + 1, hy)
+    moveHead (hx, hy) 'L' = (hx - 1, hy)
+    moveHead _ _ = undefined
 
     moveTail :: Point -> Point -> Point
     moveTail (hx, hy) (tx, ty)
