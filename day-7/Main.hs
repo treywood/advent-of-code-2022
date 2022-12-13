@@ -1,75 +1,90 @@
 module Main where
 
-import Control.Monad.State
-import Data.List (intercalate, isPrefixOf)
+import Data.List (intercalate)
 import Data.Map.Lazy as M
 import Data.Maybe (fromJust, fromMaybe)
-import Utils
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Utils (Config (..), InputParser, integer, run)
 
 data Entry = Dir String | File String Int deriving (Show)
 
 type FileSystem = Map String [Entry]
-type ParserState = ([String], FileSystem, [String])
-
-processLines :: State ParserState ()
-processLines = state $ processLines'
-  where
-    processLines' :: ParserState -> ((), ParserState)
-    processLines' s@(_, _, []) = ((), s)
-    processLines' (cwd, fs, line : rest) =
-        let
-            cwdStr = intercalate "/" (reverse cwd)
-            newState = case (words line) of
-                ("$" : "cd" : ".." : _) -> (tail cwd, fs, rest)
-                ("$" : "cd" : dir : _) ->
-                    let
-                        path = cwdStr ++ "/" ++ dir
-                     in
-                        (dir : cwd, insertWith (\_ v -> v) path [] fs, rest)
-                ("$" : "ls" : _) ->
-                    let
-                        (entries, (_, _, rest')) = runState parseEntries (cwd, fs, rest)
-                     in
-                        (cwd, insert cwdStr entries fs, rest')
-                _ -> undefined
-         in
-            runState processLines newState
-
-    parseEntries :: State ParserState [Entry]
-    parseEntries = state $ \(cwd, fs, input) ->
-        let
-            (entryStrs, rest) = break (isPrefixOf "$") input
-            entries = fmap (toEntry cwd) entryStrs
-         in
-            (entries, (cwd, fs, rest))
-      where
-        toEntry :: [String] -> String -> Entry
-        toEntry cwd str = case (words str) of
-            ["dir", dir] ->
-                let
-                    path = dir : cwd
-                    fullPath = intercalate "/" (reverse path)
-                 in
-                    Dir fullPath
-            [sizeStr, file] -> File file (read sizeStr)
-            _ -> undefined
+type Path = [String]
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    let ((), (_, fs, _)) = runState processLines ([], mempty, (lines input))
-    let dirSizes = calcSizes fs
-    let totalSize = fromJust $ M.lookup "/" dirSizes
-    let unusedSize = 70000000 - totalSize
-    let sizeToFree = 30000000 - unusedSize
-    return (minimum $ M.filter (>= sizeToFree) dirSizes)
+main =
+    run $
+        Config
+            { parser = filesystemParser
+            , run1 = part1
+            , run2 = part2
+            }
   where
-    calcSizes :: FileSystem -> Map String Int
-    calcSizes fs = M.map (dirSize fs) fs
+    filesystemParser :: InputParser FileSystem
+    filesystemParser = do
+        files <- some $ parseCommands []
+        return $
+            Prelude.foldl
+                (\m (k, v) -> M.insertWith (++) k v m)
+                M.empty
+                (concat files)
 
-    dirSize :: FileSystem -> [Entry] -> Int
-    dirSize fs = sum . fmap (entrySize fs)
+    parseCommands :: Path -> InputParser [(String, [Entry])]
+    parseCommands cwd = do
+        entries <- someTill ((cd cwd) <|> (ls cwd)) eof
+        return (concat entries)
 
-    entrySize :: FileSystem -> Entry -> Int
-    entrySize _ (File _ s) = s
-    entrySize fs (Dir name) = fromMaybe 0 (fmap (dirSize fs) (M.lookup name fs))
+    cd :: Path -> InputParser [(String, [Entry])]
+    cd cwd = try $ do
+        _ <- string "$ cd "
+        subpath <- some (alphaNumChar <|> oneOf ['/', '.']) <* newline
+        let newpath = case subpath of
+                ".." -> init cwd
+                _ -> cwd ++ [subpath]
+        entries <- parseCommands newpath
+        return entries
+
+    ls :: Path -> InputParser [(String, [Entry])]
+    ls cwd = try $ do
+        _ <- string "$ ls" <* newline
+        entries <- some (parseFile cwd <|> parseDir cwd)
+        return entries
+
+    parseFile :: Path -> InputParser (String, [Entry])
+    parseFile cwd = try $ do
+        filesize <- integer
+        _ <- space
+        filename <- some (alphaNumChar <|> char '.') <* newline
+        let cwdStr = (intercalate "/" cwd)
+        let fullpath = cwdStr ++ "/" ++ filename
+        return (cwdStr, [File fullpath filesize])
+
+    parseDir :: Path -> InputParser (String, [Entry])
+    parseDir cwd = try $ do
+        _ <- string "dir "
+        dirname <- some alphaNumChar <* newline
+        let cwdStr = (intercalate "/" cwd)
+        let fullpath = cwdStr ++ "/" ++ dirname
+        return (cwdStr, [Dir fullpath])
+
+part1 :: FileSystem -> Int
+part1 = sum . (M.filter (<= 100_000)) . calcSizes
+
+part2 :: FileSystem -> Int
+part2 fs = minimum $ (M.filter (>= sizeToFree)) dirSizes
+  where
+    dirSizes = calcSizes fs
+    totalSize = fromJust $ M.lookup "/" dirSizes
+    unusedSize = 70_000_000 - totalSize
+    sizeToFree = 30_000_000 - unusedSize
+
+calcSizes :: FileSystem -> Map String Int
+calcSizes fs = M.map (dirSize fs) fs
+
+dirSize :: FileSystem -> [Entry] -> Int
+dirSize fs = sum . fmap (entrySize fs)
+
+entrySize :: FileSystem -> Entry -> Int
+entrySize _ (File _ s) = s
+entrySize fs (Dir name) = fromMaybe 0 (fmap (dirSize fs) (M.lookup name fs))

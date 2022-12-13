@@ -6,7 +6,7 @@ import Utils (Config (..), run)
 
 main :: IO ()
 main =
-    run $
+    run
         Config
             { parser = some alphaNumChar
             , run1 = startOfPacketMarker 4 0
