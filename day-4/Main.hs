@@ -14,8 +14,8 @@ main =
     run $
         Config
             { parser = (sepEndBy parseRanges newline)
-            , run1 = part1
-            , run2 = part2
+            , run1 = length . (filter overlaps)
+            , run2 = length . (filter covers)
             }
   where
     parseRanges = do
@@ -29,14 +29,8 @@ main =
         n2 <- integer
         return $ Range n1 n2
 
-part1 :: [(Range, Range)] -> Int
-part1 = length . (filter overlaps)
-  where
-    overlaps :: (Range, Range) -> Bool
-    overlaps (Range s1 e1, Range s2 e2) = (s1 >= s2 && e1 <= e2) || (s2 >= s1 && e2 <= e1)
+overlaps :: (Range, Range) -> Bool
+overlaps (Range s1 e1, Range s2 e2) = (s1 >= s2 && e1 <= e2) || (s2 >= s1 && e2 <= e1)
 
-part2 :: [(Range, Range)] -> Int
-part2 = length . (filter overlaps)
-  where
-    overlaps :: (Range, Range) -> Bool
-    overlaps (Range s1 e1, Range s2 e2) = (s1 <= e2 && s1 >= s2) || (s2 <= e1 && s2 >= s1)
+covers :: (Range, Range) -> Bool
+covers (Range s1 e1, Range s2 e2) = (s1 <= e2 && s1 >= s2) || (s2 <= e1 && s2 >= s1)

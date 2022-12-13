@@ -9,8 +9,8 @@ main =
     run $
         Config
             { parser = sepEndBy pairs newline
-            , run1 = part1
-            , run2 = part2
+            , run1 = sum . map grade1
+            , run2 = sum . map grade2
             }
   where
     pairs = do
@@ -28,20 +28,17 @@ main =
  Y: Paper
  Z: Scissors
  --}
-part1 :: [(Char, Char)] -> Int
-part1 = sum . (map grade)
-  where
-    grade :: (Char, Char) -> Int
-    grade ('A', 'X') = 1 + 3
-    grade ('A', 'Y') = 2 + 6
-    grade ('A', 'Z') = 3 + 0
-    grade ('B', 'X') = 1 + 0
-    grade ('B', 'Y') = 2 + 3
-    grade ('B', 'Z') = 3 + 6
-    grade ('C', 'X') = 1 + 6
-    grade ('C', 'Y') = 2 + 0
-    grade ('C', 'Z') = 3 + 3
-    grade _ = 0
+grade1 :: (Char, Char) -> Int
+grade1 ('A', 'X') = 1 + 3
+grade1 ('A', 'Y') = 2 + 6
+grade1 ('A', 'Z') = 3 + 0
+grade1 ('B', 'X') = 1 + 0
+grade1 ('B', 'Y') = 2 + 3
+grade1 ('B', 'Z') = 3 + 6
+grade1 ('C', 'X') = 1 + 6
+grade1 ('C', 'Y') = 2 + 0
+grade1 ('C', 'Z') = 3 + 3
+grade1 _ = 0
 
 {--
  A: Rock
@@ -52,17 +49,14 @@ part1 = sum . (map grade)
  Y: Draw
  Z: Win
  --}
-part2 :: [(Char, Char)] -> Int
-part2 = sum . (map grade)
-  where
-    grade :: (Char, Char) -> Int
-    grade ('A', 'X') = 3 + 0
-    grade ('A', 'Y') = 1 + 3
-    grade ('A', 'Z') = 2 + 6
-    grade ('B', 'X') = 1 + 0
-    grade ('B', 'Y') = 2 + 3
-    grade ('B', 'Z') = 3 + 6
-    grade ('C', 'X') = 2 + 0
-    grade ('C', 'Y') = 3 + 3
-    grade ('C', 'Z') = 1 + 6
-    grade _ = 0
+grade2 :: (Char, Char) -> Int
+grade2 ('A', 'X') = 3 + 0
+grade2 ('A', 'Y') = 1 + 3
+grade2 ('A', 'Z') = 2 + 6
+grade2 ('B', 'X') = 1 + 0
+grade2 ('B', 'Y') = 2 + 3
+grade2 ('B', 'Z') = 3 + 6
+grade2 ('C', 'X') = 2 + 0
+grade2 ('C', 'Y') = 3 + 3
+grade2 ('C', 'Z') = 1 + 6
+grade2 _ = 0
