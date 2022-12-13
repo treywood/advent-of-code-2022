@@ -55,7 +55,7 @@ main = do
     parseMonkey :: Parsec Void String Monkey
     parseMonkey = do
         _ <- string "Monkey "
-        index <- fmap read (some digitChar)
+        index <- read <$> (some digitChar)
         string ":" >> space
         items <- parseItems
         operation <- parseExpr
@@ -66,17 +66,17 @@ main = do
         parseItems :: Parsec Void String [Int]
         parseItems = do
             _ <- space >> string "Starting items:" >> space
-            items <- sepBy (fmap read (some digitChar)) (string "," >> space)
+            items <- sepBy (read <$> (some digitChar)) (string "," >> space)
             return items
 
         parseExpr :: Parsec Void String Expr
         parseExpr = do
             _ <- space >> string "Operation: new =" >> space
-            w1 <- fmap wordToExpr (some alphaNumChar)
+            w1 <- wordToExpr <$> (some alphaNumChar)
             space
             op <- oneOf ['*', '+', '-']
             space
-            w2 <- fmap wordToExpr (some alphaNumChar)
+            w2 <- wordToExpr <$> (some alphaNumChar)
             return $ Bin w1 op w2
           where
             wordToExpr "old" = Old
@@ -85,15 +85,15 @@ main = do
         parseDivisor :: Parsec Void String Int
         parseDivisor = do
             _ <- space >> string "Test: divisible by" >> space
-            den <- fmap read (some digitChar)
+            den <- read <$> (some digitChar)
             return den
 
         parseNexts :: Parsec Void String (Int, Int)
         parseNexts = do
             _ <- space >> string "If true: throw to monkey" >> space
-            ifTrue <- fmap read (some digitChar)
+            ifTrue <- read <$> (some digitChar)
             _ <- space >> string "If false: throw to monkey" >> space
-            ifFalse <- fmap read (some digitChar)
+            ifFalse <- read <$> (some digitChar)
             return (ifTrue, ifFalse)
 
     runRounds :: Int -> Monkeys -> Monkeys
@@ -109,7 +109,7 @@ main = do
       where
         runMonkey :: Monkeys -> Int -> Monkeys
         runMonkey monkeys i =
-            fromMaybe monkeys (fmap update $ M.lookup i monkeys)
+            fromMaybe monkeys (update <$> M.lookup i monkeys)
           where
             update m =
                 (foldl (processItem m) monkeys m.items)

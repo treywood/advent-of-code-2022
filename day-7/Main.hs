@@ -87,4 +87,4 @@ dirSize fs = sum . fmap (entrySize fs)
 
 entrySize :: FileSystem -> Entry -> Int
 entrySize _ (File _ s) = s
-entrySize fs (Dir name) = fromMaybe 0 (fmap (dirSize fs) (M.lookup name fs))
+entrySize fs (Dir name) = fromMaybe 0 ((dirSize fs) <$> (M.lookup name fs))

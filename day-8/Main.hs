@@ -1,28 +1,51 @@
 module Main where
 
 import Data.List (singleton, transpose)
-import Utils
+import Text.Megaparsec
+import Text.Megaparsec.Char
+import Utils (Config (..), run)
+
+type Grid = [([Int],[Int])]
 
 main :: IO ()
-main = run $ do
-    input <- getInput
-    let rows :: [[Int]] = map (map (read . singleton)) (lines input)
-    let cols = transpose rows
-    let grid = [(r, c) | r <- rows, c <- cols]
-    return $ maximum (map checkTree (zip grid [0 ..]))
-  where
-    checkTree :: (([Int], [Int]), Int) -> Int
-    checkTree ((row, col), i) = n * e * s * w
-      where
-        row_i = i `mod` (length row)
-        col_i = i `div` (length row)
-        me = row !! row_i
-        n = count $ reverse (take col_i col)
-        s = count $ drop (col_i + 1) col
-        w = count $ reverse (take row_i row)
-        e = count $ (drop (row_i + 1) row)
+main =
+    run $
+        Config
+            { parser = do
+                rows :: [[Int]] <- sepEndBy ((map (read . singleton) <$> (some digitChar))) newline
+                let cols = transpose rows
+                return [(r, c) | r <- rows, c <- cols]
+            , run1 = part1
+            , run2 = part2
+            }
 
-        count :: [Int] -> Int
-        count xs = case (break (>= me) xs) of
-            (seen, []) -> length seen
-            (seen, _) -> (length seen) + 1
+part1 :: Grid -> Int
+part1 = length . (filter visible) . (zip [0 ..])
+  where
+    visible :: (Int, ([Int], [Int])) -> Bool
+    visible (i, (row, col)) = vis_n || vis_e || vis_s || vis_w
+      where
+        (col_i, row_i) = i `divMod` (length row)
+        me = row !! row_i
+        vis_n = all (< me) $ reverse (take col_i col)
+        vis_e = all (< me) $ drop (row_i + 1) row
+        vis_s = all (< me) $ drop (col_i + 1) col
+        vis_w = all (< me) $ reverse (take row_i row)
+
+part2 :: Grid -> Int
+part2 = maximum . (map scenicScore) . (zip [0..])
+    where
+        scenicScore :: (Int, ([Int], [Int])) -> Int
+        scenicScore (i, (row, col)) = n * e * s * w
+          where
+            (col_i, row_i) = i `divMod` (length row)
+            me = row !! row_i
+            n = score $ reverse (take col_i col)
+            s = score $ drop (col_i + 1) col
+            w = score $ reverse (take row_i row)
+            e = score $ (drop (row_i + 1) row)
+
+            score :: [Int] -> Int
+            score xs = case (break (>= me) xs) of
+                (seen, []) -> length seen
+                (seen, _) -> (length seen) + 1

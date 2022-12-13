@@ -18,7 +18,7 @@ data Config a o1 o2 = Config
     }
 
 integer :: ParsecT Void String m Int
-integer = fmap read (some digitChar)
+integer = read <$> (some digitChar)
 
 notImplemented :: a -> String
 notImplemented _ = "Not Implemented"

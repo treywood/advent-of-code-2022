@@ -19,7 +19,7 @@ main :: IO ()
 main = run $ do
     input <- getInput
     let rope = replicate 10 origin
-    let initState = (rope, [origin], fmap read $ lines input)
+    let initState = (rope, [origin], read <$> lines input)
     let ((), (_, ps, _)) = runState runMoves initState
     return $ (length . nub) ps
   where

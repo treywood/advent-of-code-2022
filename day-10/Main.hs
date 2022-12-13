@@ -13,7 +13,7 @@ instance Read Instr where
 
 main :: IO ()
 main = run $ do
-    input :: [Instr] <- fmap ((map read) . lines) getInput
+    input :: [Instr] <- ((map read) . lines) <$> getInput
     let xs = scanl (\x f -> f x) (1, 0, '#') (input >>= toFn)
     let crt = map (\(_, _, c) -> c) xs
     mapM putStrLn (chunksOf 40 crt)
