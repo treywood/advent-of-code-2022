@@ -33,7 +33,7 @@ part2 =
         . map third
         . drop 1
         . scanl (\x f -> f x) (1, 0, '#')
-        . (map draw)
+        . map draw
   where
     draw :: (Int -> Int) -> (Int, Int, Char) -> (Int, Int, Char)
     draw f (x, c, _) = (f x, c + 1, ch)
