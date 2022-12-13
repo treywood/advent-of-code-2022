@@ -2,15 +2,15 @@ module Main where
 
 import Text.Megaparsec (some)
 import Text.Megaparsec.Char (alphaNumChar)
-import Utils (Config (..), run)
+import Utils
 
 main :: IO ()
 main =
     run
         Config
             { parser = some alphaNumChar
-            , run1 = startOfPacketMarker 4 0
-            , run2 = startOfPacketMarker 14 0
+            , run1 = putShowLn . startOfPacketMarker 4 0
+            , run2 = putShowLn . startOfPacketMarker 14 0
             }
 
 startOfPacketMarker :: Int -> Int -> String -> Int

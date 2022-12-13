@@ -3,7 +3,7 @@ module Main where
 import Data.List (nub)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), integer, run)
+import Utils
 
 type Point = (Int, Int)
 
@@ -15,8 +15,8 @@ main =
     run $
         Config
             { parser = concat <$> sepBy parseMoves newline
-            , run1 = length . nub . snd . runMoves [origin, origin]
-            , run2 = length . nub . snd . runMoves (replicate 10 origin)
+            , run1 = putShowLn . length . nub . snd . runMoves [origin, origin]
+            , run2 = putShowLn . length . nub . snd . runMoves (replicate 10 origin)
             }
   where
     parseMoves = do

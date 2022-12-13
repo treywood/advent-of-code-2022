@@ -6,19 +6,24 @@ module Utils where
 import Data.Void
 import System.Environment
 import System.IO
-import Text.Megaparsec (Parsec, ParsecT, errorBundlePretty, runParser, some)
-import Text.Megaparsec.Char (digitChar)
+import Text.Megaparsec (Parsec, ParsecT, eof, errorBundlePretty, optional, runParser, some, someTill)
+import Text.Megaparsec.Char (char, digitChar, printChar)
 
-type InputParser = Parsec Void String
+type Parser = Parsec Void String
 
-data Config a o1 o2 = Config
-    { parser :: InputParser a
-    , run1 :: (a -> o1)
-    , run2 :: (a -> o2)
+data Config a = Config
+    { parser :: Parser a
+    , run1 :: (a -> IO ())
+    , run2 :: (a -> IO ())
     }
 
 integer :: ParsecT Void String m Int
-integer = read <$> (some digitChar)
+integer = do
+    sign <- optional (char '-')
+    num <- read <$> some digitChar
+    return $ case sign of
+        Just '-' -> negate num
+        Nothing -> num
 
 notImplemented :: a -> String
 notImplemented _ = "Not Implemented"
@@ -30,15 +35,18 @@ getInput = do
     input <- hGetContents handle
     return input
 
-run :: (Show o1, Show o2) => Config a o1 o2 -> IO ()
+putShowLn :: (Show a) => a -> IO ()
+putShowLn = putStrLn . show
+
+run :: Config a -> IO ()
 run config = do
     input <- getInput
     case runParser config.parser "" input of
         Right parsedInput -> do
             putStrLn "Part 1:"
-            putStrLn $ show $ config.run1 parsedInput
+            config.run1 parsedInput
             putStrLn "\nPart 2:"
-            putStrLn $ show $ config.run2 parsedInput
+            config.run2 parsedInput
         Left err -> do
             putStrLn "Parse Error:"
             putStrLn (errorBundlePretty err)

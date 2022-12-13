@@ -2,7 +2,7 @@ module Main where
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), integer, run)
+import Utils
 
 data Range = Range Int Int deriving (Show)
 
@@ -14,8 +14,8 @@ main =
     run $
         Config
             { parser = (sepEndBy parseRanges newline)
-            , run1 = length . (filter overlaps)
-            , run2 = length . (filter covers)
+            , run1 = putShowLn . length . (filter overlaps)
+            , run2 = putShowLn . length . (filter covers)
             }
   where
     parseRanges = do

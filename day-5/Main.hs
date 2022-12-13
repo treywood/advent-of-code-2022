@@ -4,7 +4,7 @@ import Data.Char (isSpace)
 import Data.List (transpose)
 import Text.Megaparsec (between, getInput, sepEndBy, setInput, some)
 import Text.Megaparsec.Char (alphaNumChar, char, newline, space, string)
-import Utils (Config (..), InputParser, integer, run)
+import Utils
 
 data Move = Move Int Int Int deriving (Show)
 data Input = Input [String] [Move] deriving (Show)
@@ -14,13 +14,13 @@ main =
     run $
         Config
             { parser = parseInput
-            , run1 = part1
-            , run2 = part2
+            , run1 = putShowLn . part1
+            , run2 = putShowLn . part2
             }
   where
-    parseInput :: InputParser Input
+    parseInput :: Parser Input
     parseInput = do
-        input <- getInput
+        input <- Text.Megaparsec.getInput
         let (stackStrs, moveStrs) = break (all isSpace) (lines input)
 
         setInput $ (unlines . transpose . init) stackStrs
@@ -31,14 +31,14 @@ main =
 
         return $ Input stacks moves
 
-    parseStack :: InputParser String
+    parseStack :: Parser String
     parseStack =
         between
             (space >> some (char '[') >> newline >> space)
             (space >> some (char ']'))
             (some alphaNumChar)
 
-    parseMove :: InputParser Move
+    parseMove :: Parser Move
     parseMove = do
         _ <- string "move "
         n1 <- integer

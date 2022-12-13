@@ -2,15 +2,15 @@ module Main where
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), run)
+import Utils
 
 main :: IO ()
 main =
     run $
         Config
             { parser = sepEndBy pairs newline
-            , run1 = sum . map grade1
-            , run2 = sum . map grade2
+            , run1 = putShowLn . sum . map grade1
+            , run2 = putShowLn . sum . map grade2
             }
   where
     pairs = do

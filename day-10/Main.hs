@@ -1,33 +1,48 @@
 module Main where
 
-import Data.List.Split
+import Data.List.Split (chunksOf)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 import Utils
 
-data Instr = Noop | Addx Int deriving (Show)
-
-instance Read Instr where
-    readsPrec _ str = case (words str) of
-        "noop" : _ -> [(Noop, "")]
-        ("addx" : x : _) -> [(Addx (read x), "")]
-        _ -> undefined
-
 main :: IO ()
-main = run $ do
-    input :: [Instr] <- ((map read) . lines) <$> getInput
-    let xs = scanl (\x f -> f x) (1, 0, '#') (input >>= toFn)
-    let crt = map (\(_, _, c) -> c) xs
-    mapM putStrLn (chunksOf 40 crt)
+main =
+    run $
+        Config
+            { parser = concat <$> sepBy (addx <|> noop) newline
+            , run1 = putShowLn . foldl signalStrength 0 . zip [1 ..] . scanl (\x f -> f x) 1
+            , run2 = mapM_ putStrLn . part2
+            }
   where
-    toFn :: Instr -> [(Int, Int, Char) -> (Int, Int, Char)]
-    toFn Noop = [draw id]
-    toFn (Addx x) = [draw id, draw (+ x)]
+    addx = try $ do
+        _ <- string "addx "
+        n <- integer
+        return [id, (+ n)]
+    noop = try $ do
+        _ <- string "noop"
+        return [id]
 
+signalStrength :: Int -> (Int, Int) -> Int
+signalStrength acc (i, x)
+    | (i - 20) `mod` 40 == 0 = acc + (i * x)
+    | otherwise = acc
+
+part2 :: [Int -> Int] -> [String]
+part2 =
+    chunksOf 40
+        . map third
+        . drop 1
+        . scanl (\x f -> f x) (1, 0, '#')
+        . (map draw)
+  where
     draw :: (Int -> Int) -> (Int, Int, Char) -> (Int, Int, Char)
-    draw f (x, c, _) = (f x, c + 1, char)
+    draw f (x, c, _) = (f x, c + 1, ch)
       where
         p = c `mod` 40
         sprite = [p - 1 .. p + 1]
-        char =
+        ch =
             if x `elem` sprite
                 then '#'
                 else '.'
+
+    third (_, _, c) = c

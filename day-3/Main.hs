@@ -4,7 +4,7 @@ import Data.List (elemIndex, intersect)
 import Data.List.Split (chunksOf)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), run)
+import Utils
 
 priorities :: [Char]
 priorities = ['a' .. 'z'] ++ ['A' .. 'Z']
@@ -14,8 +14,8 @@ main =
     run $
         Config
             { parser = sepEndBy (some alphaNumChar) newline
-            , run1 = part1
-            , run2 = part2
+            , run1 = putShowLn . part1
+            , run2 = putShowLn . part2
             }
 
 part1 :: [String] -> Int

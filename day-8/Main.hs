@@ -3,7 +3,7 @@ module Main where
 import Data.List (singleton, transpose)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), run)
+import Utils 
 
 type Grid = [([Int],[Int])]
 
@@ -15,8 +15,8 @@ main =
                 rows :: [[Int]] <- sepEndBy ((map (read . singleton) <$> (some digitChar))) newline
                 let cols = transpose rows
                 return [(r, c) | r <- rows, c <- cols]
-            , run1 = part1
-            , run2 = part2
+            , run1 = putShowLn . part1
+            , run2 = putShowLn . part2
             }
 
 part1 :: Grid -> Int

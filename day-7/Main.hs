@@ -5,7 +5,7 @@ import Data.Map.Lazy as M
 import Data.Maybe (fromJust, fromMaybe)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils (Config (..), InputParser, integer, run)
+import Utils
 
 data Entry = Dir String | File String Int deriving (Show)
 
@@ -17,11 +17,11 @@ main =
     run $
         Config
             { parser = filesystemParser
-            , run1 = part1
-            , run2 = part2
+            , run1 = putShowLn . part1
+            , run2 = putShowLn . part2
             }
   where
-    filesystemParser :: InputParser FileSystem
+    filesystemParser :: Parser FileSystem
     filesystemParser = do
         files <- some $ parseCommands []
         return $
@@ -30,12 +30,12 @@ main =
                 M.empty
                 (concat files)
 
-    parseCommands :: Path -> InputParser [(String, [Entry])]
+    parseCommands :: Path -> Parser [(String, [Entry])]
     parseCommands cwd = do
         entries <- someTill ((cd cwd) <|> (ls cwd)) eof
         return (concat entries)
 
-    cd :: Path -> InputParser [(String, [Entry])]
+    cd :: Path -> Parser [(String, [Entry])]
     cd cwd = try $ do
         _ <- string "$ cd "
         subpath <- some (alphaNumChar <|> oneOf ['/', '.']) <* newline
@@ -45,13 +45,13 @@ main =
         entries <- parseCommands newpath
         return entries
 
-    ls :: Path -> InputParser [(String, [Entry])]
+    ls :: Path -> Parser [(String, [Entry])]
     ls cwd = try $ do
         _ <- string "$ ls" <* newline
         entries <- some (parseFile cwd <|> parseDir cwd)
         return entries
 
-    parseFile :: Path -> InputParser (String, [Entry])
+    parseFile :: Path -> Parser (String, [Entry])
     parseFile cwd = try $ do
         filesize <- integer <* space
         filename <- some (alphaNumChar <|> char '.') <* newline
@@ -59,7 +59,7 @@ main =
         let fullpath = cwdStr ++ "/" ++ filename
         return (cwdStr, [File fullpath filesize])
 
-    parseDir :: Path -> InputParser (String, [Entry])
+    parseDir :: Path -> Parser (String, [Entry])
     parseDir cwd = try $ do
         _ <- string "dir "
         dirname <- some alphaNumChar <* newline
