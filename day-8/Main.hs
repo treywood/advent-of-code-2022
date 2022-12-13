@@ -3,9 +3,9 @@ module Main where
 import Data.List (singleton, transpose)
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Utils 
+import Utils
 
-type Grid = [([Int],[Int])]
+type Grid = [([Int], [Int])]
 
 main :: IO ()
 main =
@@ -21,7 +21,7 @@ main =
 
 part1 :: Grid -> Int
 part1 = length . (filter visible) . (zip [0 ..])
-  where
+   where
     visible :: (Int, ([Int], [Int])) -> Bool
     visible (i, (row, col)) = vis_n || vis_e || vis_s || vis_w
       where
@@ -33,19 +33,19 @@ part1 = length . (filter visible) . (zip [0 ..])
         vis_w = all (< me) $ reverse (take row_i row)
 
 part2 :: Grid -> Int
-part2 = maximum . (map scenicScore) . (zip [0..])
-    where
-        scenicScore :: (Int, ([Int], [Int])) -> Int
-        scenicScore (i, (row, col)) = n * e * s * w
-          where
-            (col_i, row_i) = i `divMod` (length row)
-            me = row !! row_i
-            n = score $ reverse (take col_i col)
-            s = score $ drop (col_i + 1) col
-            w = score $ reverse (take row_i row)
-            e = score $ (drop (row_i + 1) row)
+part2 = maximum . (map scenicScore) . (zip [0 ..])
+  where
+    scenicScore :: (Int, ([Int], [Int])) -> Int
+    scenicScore (i, (row, col)) = n * e * s * w
+      where
+        (col_i, row_i) = i `divMod` (length row)
+        me = row !! row_i
+        n = score $ reverse (take col_i col)
+        s = score $ drop (col_i + 1) col
+        w = score $ reverse (take row_i row)
+        e = score $ (drop (row_i + 1) row)
 
-            score :: [Int] -> Int
-            score xs = case (break (>= me) xs) of
-                (seen, []) -> length seen
-                (seen, _) -> (length seen) + 1
+        score :: [Int] -> Int
+        score xs = case (break (>= me) xs) of
+            (seen, []) -> length seen
+            (seen, _) -> (length seen) + 1

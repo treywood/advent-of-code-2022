@@ -2,7 +2,7 @@ module Main where
 
 import Data.List (intercalate)
 import Data.Map.Lazy (Map)
-import qualified Data.Map.Lazy as M
+import Data.Map.Lazy qualified as M
 import Data.Maybe (fromJust, fromMaybe)
 import Text.Megaparsec
 import Text.Megaparsec.Char

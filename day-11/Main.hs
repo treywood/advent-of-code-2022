@@ -6,7 +6,7 @@ module Main where
 import Data.Function ((&))
 import Data.List (sortOn)
 import Data.Map (Map, elems)
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Maybe (fromMaybe)
 import Data.Void
 import Text.Megaparsec
