@@ -1,7 +1,8 @@
 module Main where
 
 import Data.List (intercalate)
-import Data.Map.Lazy as M
+import Data.Map.Lazy (Map)
+import qualified Data.Map.Lazy as M
 import Data.Maybe (fromJust, fromMaybe)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -25,7 +26,7 @@ main =
     filesystemParser = do
         files <- some $ cmds []
         return $
-            Prelude.foldl
+            foldl
                 (\m (k, v) -> M.insertWith (++) k v m)
                 M.empty
                 (concat files)
