@@ -21,7 +21,7 @@ main =
 
 part1 :: Grid -> Int
 part1 = length . (filter visible) . (zip [0 ..])
-   where
+  where
     visible :: (Int, ([Int], [Int])) -> Bool
     visible (i, (row, col)) = vis_n || vis_e || vis_s || vis_w
       where

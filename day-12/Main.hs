@@ -45,8 +45,8 @@ main =
 
 part1 :: Input -> IO ()
 part1 (Input grid start end) = putShowLn $ (! end) $ shortestPaths grid ascend start
-    where
-        ascend p n = (grid ! n - grid ! p) <= 1
+  where
+    ascend p n = (grid ! n - grid ! p) <= 1
 
 part2 :: Input -> IO ()
 part2 (Input grid _ end) = putShowLn $ minimum $ candidates
@@ -74,7 +74,6 @@ neighbors grid testHeight p@(x, y) len paths =
         filter check [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
   where
     check n =
-         M.member n grid
+        M.member n grid
             && (maybe True (> len) $ M.lookup n paths)
             && testHeight p n
-            -- && (grid ! n - grid ! p) <= 1
