@@ -98,3 +98,8 @@ executable day-12
     build-depends:
         extra,
         containers
+
+executable day-13
+    import:           aoc-day
+    hs-source-dirs:   day-13
+    main-is:          Main.hs
