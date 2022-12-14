@@ -1,8 +1,7 @@
 module Main where
 
-import Data.List (sortOn)
 import Data.Map (Map, (!))
-import Data.Map qualified as M
+import qualified Data.Map as M
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Utils
@@ -70,8 +69,7 @@ shortestPaths grid testHeight = shortestPaths' 0 mempty
 
 neighbors :: Grid -> HeightTest -> Point -> Int -> PathMap -> [Point]
 neighbors grid testHeight p@(x, y) len paths =
-    sortOn (negate . (grid !)) $
-        filter check [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
+    filter check [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
   where
     check n =
         M.member n grid
