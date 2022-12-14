@@ -97,6 +97,4 @@ executable day-12
     main-is:          Main.hs
     build-depends:
         extra,
-        utility-ht,
-        monad-par,
-        monad-par-extras
+        containers

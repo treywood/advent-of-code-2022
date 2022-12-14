@@ -1,16 +1,16 @@
 module Main where
 
-import Data.Function (on)
-import Data.List.Extra (firstJust)
-import Data.List.HT (sieve)
-import Data.List (transpose, minimumBy, sortOn)
-import Data.Maybe (fromJust, mapMaybe)
+import Data.List (sortOn)
+import Data.Map (Map, (!))
+import Data.Map qualified as M
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Utils
 
-type Grid = [([Char], [Char])]
+type Grid = Map Point Int
 type Point = (Int, Int)
+type PathMap = Map Point Int
+type HeightTest = Point -> Point -> Bool
 
 data Input = Input Grid Point Point deriving (Show)
 
@@ -18,68 +18,63 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = inputFromRows <$> sepEndBy (some alphaNumChar) newline
-            , run1 = showGrid
-            , run2 = \(Input grid start end) -> seek grid end start >>= putShowLn
+            { parser = input <$> sepEndBy (some alphaNumChar) newline
+            , run1 = part1
+            , run2 = part2
             }
   where
-    inputFromRows :: [String] -> Input
-    inputFromRows rows = Input grid start end
+    input :: [[Char]] -> Input
+    input rows = Input (M.map (fromEnum . fix) grid) start end
       where
-        grid = [(r,c) | r <- rows, c <- transpose rows]
-        start = findP 'S' grid
-        end = findP 'E' grid
+        grid =
+            M.fromList
+                [ (p, c)
+                | (c, i) <- zip (concat rows) [0 ..]
+                , let p = i `divMod` n
+                ]
 
-        findP :: Char -> Grid -> Point
-        findP c = fromJust . firstJust (findP' c) . zip [0..]
+        fix 'S' = 'a'
+        fix 'E' = 'z'
+        fix c = c
 
-        findP' :: Char -> (Int, ([Char],[Char])) -> Maybe Point
-        findP' c (i, (row, _)) = if row !! row_i == c
-                                    then Just (col_i, row_i)
-                                    else Nothing
-          where
-            (col_i, row_i) = i `divMod` (length row)
+        start = find 'S'
+        end = find 'E'
 
-seek :: Grid -> Point -> Point -> IO [Point]
-seek grid end start = head <$> seek' [] start
+        n = (length . head) rows
+        find v = fst . head $ filter ((== v) . snd) $ M.assocs grid
+
+part1 :: Input -> IO ()
+part1 (Input grid start end) = putShowLn $ (! end) $ shortestPaths grid ascend start
+    where
+        ascend p n = (grid ! n - grid ! p) <= 1
+
+part2 :: Input -> IO ()
+part2 (Input grid _ end) = putShowLn $ minimum $ candidates
   where
-    seek' :: [Point] -> Point -> IO [[Point]]
-    seek' path p
-        | start == end = return [path']
-        | otherwise = do
-            putStrLn $ (show path')
-            paths <- concat <$> mapM (seek' path') ns
-            return paths
+    candidates = M.elems $ M.filterWithKey isA distances
+
+    distances = shortestPaths grid descend end
+    descend p n = (grid ! p - grid ! n) <= 1
+
+    isA :: Point -> Int -> Bool
+    isA p _ = grid ! p == fromEnum 'a'
+
+shortestPaths :: Grid -> HeightTest -> Point -> PathMap
+shortestPaths grid testHeight = shortestPaths' 0 mempty
+  where
+    shortestPaths' :: Int -> PathMap -> Point -> PathMap
+    shortestPaths' len paths p = foldl (shortestPaths' (len + 1)) paths' ns
       where
-        path' = path ++ [p]
-        ns = neighbors grid p path'
+        ns = neighbors grid testHeight p (len + 1) paths'
+        paths' = M.insertWith min p len paths
 
-get :: Point -> Grid -> Char
-get (x,y) grid = case (!!x) . snd . (!!y) $ grid of
-              'S' -> 'a'
-              'E' -> 'z'
-              c -> c
-
-neighbors :: Grid -> Point -> [Point] -> [Point]
-neighbors grid p@(x,y) path = 
-    sortOn (negate . fromEnum . (flip get) grid) $
-        filter check [(x,y+1),(x-1,y),(x+1,y),(x,y-1)]
+neighbors :: Grid -> HeightTest -> Point -> Int -> PathMap -> [Point]
+neighbors grid testHeight p@(x, y) len paths =
+    sortOn (negate . (grid !)) $
+        filter check [(x + 1, y), (x, y + 1), (x - 1, y), (x, y - 1)]
   where
-    check n = not (n `elem` path) && canGo n
-    canGo n = inside n && notTooHigh n
-
-    notTooHigh n = (fromEnum (get n grid) - fromEnum (get p grid)) <= 1
-
-    inside :: Point -> Bool
-    inside (x',y') = x' >= 0 && y' >= 0 && x' < (rowsN grid) && y' < (colsN grid)
-
-    colsN :: Grid -> Int
-    colsN = length . fst . (!! 0)
-
-    rowsN :: Grid -> Int
-    rowsN = length . snd . (!! 0)
-
-showGrid :: Input -> IO ()
-showGrid (Input grid@((row, _) : _) _ _) = mapM_ putStrLn (sieve n $ map fst grid)
-    where n = length row
-showGrid _ = undefined
+    check n =
+         M.member n grid
+            && (maybe True (> len) $ M.lookup n paths)
+            && testHeight p n
+            -- && (grid ! n - grid ! p) <= 1
