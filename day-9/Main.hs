@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative
 import Data.List (nub)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -14,15 +15,15 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = concat <$> sepBy parseMoves newline
-            , run1 = putShowLn . length . nub . snd . runMoves [origin, origin]
-            , run2 = putShowLn . length . nub . snd . runMoves (replicate 10 origin)
+            { parser = concat <$> sepBy moves newline
+            , run1 = putShowLn . solution [origin, origin]
+            , run2 = putShowLn . solution (replicate 10 origin)
             }
   where
-    parseMoves = do
-        dir <- oneOf ['U', 'D', 'L', 'R'] <* space
-        num <- integer
-        return $ replicate num dir
+    moves = (oneOf ['U', 'D', 'L', 'R'] <* space) <**> (replicate <$> integer)
+
+solution :: [Point] -> [Char] -> Int
+solution rope = length . nub . snd . runMoves rope
 
 runMoves :: [Point] -> [Char] -> ([Point], [Point])
 runMoves rope = foldl move (rope, [last rope])

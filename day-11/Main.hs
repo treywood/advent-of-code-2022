@@ -44,30 +44,25 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = (M.fromList . zip [0 ..]) <$> sepBy parseMonkey space
+            { parser = M.fromList . zip [0 ..] <$> sepBy monkey space
             , run1 = putShowLn . monkeyBusiness 20 (`div` 3)
             , run2 = \ms -> putShowLn $ monkeyBusiness 10_000 (crt ms) ms
             }
   where
-    parseMonkey :: Parsec Void String Monkey
-    parseMonkey = do
-        _ <- string "Monkey "
-        index <- read <$> (some digitChar)
-        string ":" >> space
-        items <- parseItems
-        operation <- parseExpr
-        divisor <- parseDivisor
-        nexts <- parseNexts
-        return $ Monkey index items operation divisor nexts 0
+    monkey :: Parser Monkey
+    monkey = Monkey <$> index <*> items <*> expr <*> divisor <*> nexts <*> (pure 0)
       where
-        parseItems :: Parsec Void String [Int]
-        parseItems = do
-            space <* string "Starting items:" <* space
-            items <- sepBy (read <$> (some digitChar)) (string "," >> space)
-            return items
+        index :: Parser Int
+        index = string "Monkey " *> integer <* char ':' <* space
 
-        parseExpr :: Parsec Void String Expr
-        parseExpr = do
+        items :: Parsec Void String [Int]
+        items = do
+            space <* string "Starting items:" <* space
+            xs <- sepBy (read <$> (some digitChar)) (string "," >> space)
+            return xs
+
+        expr :: Parsec Void String Expr
+        expr = do
             space <* string "Operation: new =" <* space
             w1 <- wordToExpr <$> (some alphaNumChar) <* space
             op <- oneOf ['*', '+', '-'] <* space
@@ -77,14 +72,14 @@ main =
             wordToExpr "old" = Old
             wordToExpr x = Num (read x)
 
-        parseDivisor :: Parsec Void String Int
-        parseDivisor = do
+        divisor :: Parsec Void String Int
+        divisor = do
             space <* string "Test: divisible by" <* space
             den <- read <$> (some digitChar)
             return den
 
-        parseNexts :: Parsec Void String (Int, Int)
-        parseNexts = do
+        nexts :: Parsec Void String (Int, Int)
+        nexts = do
             space <* string "If true: throw to monkey" <* space
             ifTrue <- read <$> (some digitChar)
             space <* string "If false: throw to monkey" <* space

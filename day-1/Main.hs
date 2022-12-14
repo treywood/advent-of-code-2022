@@ -9,7 +9,7 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = (map sum) <$> (sepEndBy (endBy integer newline) newline)
+            { parser = map sum <$> sepEndBy (endBy integer newline) newline
             , run1 = putShowLn . maximum
             , run2 = putShowLn . sum . take 3 . sortOn negate
             }

@@ -24,22 +24,19 @@ main =
   where
     filesystemParser :: Parser FileSystem
     filesystemParser = do
-        files <- some $ cmds []
+        files <- concat <$> (some $ cmds [])
         return $
-            foldl
-                (\m (k, v) -> M.insertWith (++) k v m)
-                M.empty
-                (concat files)
+            foldl (\m (k, v) -> M.insertWith (++) k v m) mempty files
 
     cmds :: Path -> Parser [(String, [Entry])]
-    cmds cwd = do
-        entries <- some ((cd cwd) <|> (ls cwd))
-        return (concat entries)
+    cmds cwd = concat <$> some (cd cwd <|> ls cwd)
 
     cd :: Path -> Parser [(String, [Entry])]
     cd cwd = try $ do
-        _ <- string "$ cd "
-        subpath <- some (alphaNumChar <|> oneOf ['/', '.']) <* newline
+        subpath <-
+            string "$ cd "
+                *> some (alphaNumChar <|> oneOf ['/', '.'])
+                <* newline
         let newpath = case subpath of
                 ".." -> init cwd
                 _ -> cwd ++ [subpath]
@@ -47,10 +44,7 @@ main =
         return entries
 
     ls :: Path -> Parser [(String, [Entry])]
-    ls cwd = try $ do
-        _ <- string "$ ls" <* newline
-        entries <- some (file cwd <|> dir cwd)
-        return entries
+    ls cwd = try $ string "$ ls" *> newline *> some (file cwd <|> dir cwd)
 
     file :: Path -> Parser (String, [Entry])
     file cwd = try $ do
@@ -62,14 +56,13 @@ main =
 
     dir :: Path -> Parser (String, [Entry])
     dir cwd = try $ do
-        _ <- string "dir "
-        dirname <- some alphaNumChar <* newline
+        dirname <- string "dir " *> some alphaNumChar <* newline
         let cwdStr = (intercalate "/" cwd)
         let fullpath = cwdStr ++ "/" ++ dirname
         return (cwdStr, [Dir fullpath])
 
 part1 :: FileSystem -> Int
-part1 = sum . (M.filter (<= 100_000)) . calcSizes
+part1 = sum . M.filter (<= 100_000) . calcSizes
 
 part2 :: FileSystem -> Int
 part2 fs = minimum $ (M.filter (>= sizeToFree)) dirSizes
@@ -87,4 +80,4 @@ dirSize fs = sum . fmap (entrySize fs)
 
 entrySize :: FileSystem -> Entry -> Int
 entrySize _ (File _ s) = s
-entrySize fs (Dir name) = fromMaybe 0 ((dirSize fs) <$> (M.lookup name fs))
+entrySize fs (Dir name) = fromMaybe 0 (dirSize fs <$> M.lookup name fs)

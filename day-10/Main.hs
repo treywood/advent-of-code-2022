@@ -1,5 +1,6 @@
 module Main where
 
+import Data.List (singleton)
 import Data.List.Split (chunksOf)
 import Text.Megaparsec
 import Text.Megaparsec.Char
@@ -14,13 +15,8 @@ main =
             , run2 = mapM_ putStrLn . part2
             }
   where
-    addx = try $ do
-        _ <- string "addx "
-        n <- integer
-        return [id, (+ n)]
-    noop = try $ do
-        _ <- string "noop"
-        return [id]
+    addx = try $ ([id] ++) . singleton . (+) <$> (string "addx " *> integer)
+    noop = try $ string "noop" *> return [id]
 
 part1 :: [Int -> Int] -> Int
 part1 = foldl signalStrength 0 . zip [1 ..] . scanl (\x f -> f x) 1

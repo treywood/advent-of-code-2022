@@ -2,8 +2,8 @@ module Main where
 
 import Data.Char (isSpace)
 import Data.List (transpose)
-import Text.Megaparsec (between, getInput, sepEndBy, setInput, some)
-import Text.Megaparsec.Char (alphaNumChar, char, newline, space, string)
+import Text.Megaparsec
+import Text.Megaparsec.Char
 import Utils
 
 data Move = Move Int Int Int deriving (Show)
@@ -13,40 +13,36 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = parseInput
+            { parser = input
             , run1 = putShowLn . part1
             , run2 = putShowLn . part2
             }
   where
-    parseInput :: Parser Input
-    parseInput = do
-        input <- Text.Megaparsec.getInput
-        let (stackStrs, moveStrs) = break (all isSpace) (lines input)
+    input :: Parser Input
+    input = do
+        (stackStrs, moveStrs) <- (break (all isSpace) . lines) <$> getInput
 
         setInput $ (unlines . transpose . init) stackStrs
-        stacks <- space >> sepEndBy parseStack space
+        stacks <- space >> sepEndBy stack space
 
         setInput $ (unlines . tail) moveStrs
-        moves <- sepEndBy parseMove newline
+        moves <- sepEndBy move newline
 
         return $ Input stacks moves
 
-    parseStack :: Parser String
-    parseStack =
+    stack :: Parser String
+    stack =
         between
-            (space >> some (char '[') >> newline >> space)
-            (space >> some (char ']'))
+            (space <* some (char '[') <* newline <* space)
+            (space <* some (char ']'))
             (some alphaNumChar)
 
-    parseMove :: Parser Move
-    parseMove = do
-        _ <- string "move "
-        n1 <- integer
-        _ <- string " from "
-        n2 <- integer
-        _ <- string " to "
-        n3 <- integer
-        return $ Move n1 n2 n3
+    move :: Parser Move
+    move =
+        Move
+            <$> (string "move " *> integer)
+            <*> (string " from " *> integer)
+            <*> (string " to " *> integer)
 
 part1 :: Input -> String
 part1 (Input stacks moves) = map head $ foldl (runMove reverse) stacks moves

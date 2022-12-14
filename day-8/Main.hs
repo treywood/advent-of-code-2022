@@ -12,7 +12,7 @@ main =
     run $
         Config
             { parser = do
-                rows :: [[Int]] <- sepEndBy ((map (read . singleton) <$> (some digitChar))) newline
+                rows :: [[Int]] <- sepEndBy (map (read . singleton) <$> some digitChar) newline
                 let cols = transpose rows
                 return [(r, c) | r <- rows, c <- cols]
             , run1 = putShowLn . part1
@@ -25,7 +25,7 @@ part1 = length . (filter visible) . (zip [0 ..])
     visible :: (Int, ([Int], [Int])) -> Bool
     visible (i, (row, col)) = vis_n || vis_e || vis_s || vis_w
       where
-        (col_i, row_i) = i `divMod` (length row)
+        (col_i, row_i) = i `divMod` length row
         me = row !! row_i
         vis_n = all (< me) $ reverse (take col_i col)
         vis_e = all (< me) $ drop (row_i + 1) row
@@ -38,7 +38,7 @@ part2 = maximum . (map scenicScore) . (zip [0 ..])
     scenicScore :: (Int, ([Int], [Int])) -> Int
     scenicScore (i, (row, col)) = n * e * s * w
       where
-        (col_i, row_i) = i `divMod` (length row)
+        (col_i, row_i) = i `divMod` length row
         me = row !! row_i
         n = score $ reverse (take col_i col)
         s = score $ drop (col_i + 1) col

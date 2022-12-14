@@ -22,13 +22,13 @@ part1 :: [String] -> Int
 part1 = sum . (map grade)
   where
     grade :: String -> Int
-    grade pack = ((maybe 0 (+ 1)) . (`elemIndex` priorities)) $ head (intersect h1 h2)
+    grade pack = (maybe 0 (+ 1) . (`elemIndex` priorities)) $ head (intersect h1 h2)
       where
-        mid = (length pack) `div` 2
+        mid = length pack `div` 2
         (h1, h2) = (take mid pack, drop mid pack)
 
 part2 :: [String] -> Int
-part2 = sum . (map grade) . (chunksOf 3)
+part2 = sum . map grade . chunksOf 3
   where
     grade :: [String] -> Int
     grade (g1 : gs) = (maybe 0 (+ 1) . (`elemIndex` priorities)) badge

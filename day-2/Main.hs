@@ -13,10 +13,7 @@ main =
             , run2 = putShowLn . sum . map grade2
             }
   where
-    pairs = do
-        a <- alphaNumChar <* space
-        b <- alphaNumChar
-        return (a, b)
+    pairs = (,) <$> (alphaNumChar <* space) <*> alphaNumChar
 
 {--
  A: Rock

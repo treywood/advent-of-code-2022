@@ -13,21 +13,13 @@ main :: IO ()
 main =
     run $
         Config
-            { parser = (sepEndBy parseRanges newline)
-            , run1 = putShowLn . length . (filter overlaps)
-            , run2 = putShowLn . length . (filter covers)
+            { parser = sepEndBy parseRanges newline
+            , run1 = putShowLn . length . filter overlaps
+            , run2 = putShowLn . length . filter covers
             }
   where
-    parseRanges = do
-        r1 <- parseRange
-        _ <- char ','
-        r2 <- parseRange
-        return (r1, r2)
-    parseRange = do
-        n1 <- integer
-        _ <- char '-'
-        n2 <- integer
-        return $ Range n1 n2
+    parseRanges = (,) <$> (parseRange <* char ',') <*> parseRange
+    parseRange = Range <$> (integer <* char '-') <*> integer
 
 overlaps :: (Range, Range) -> Bool
 overlaps (Range s1 e1, Range s2 e2) = (s1 >= s2 && e1 <= e2) || (s2 >= s1 && e2 <= e1)

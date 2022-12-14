@@ -28,19 +28,14 @@ integer = do
 notImplemented :: a -> String
 notImplemented _ = "Not Implemented"
 
-getInput :: IO String
-getInput = do
-    [filename] <- getArgs
-    handle <- openFile filename ReadMode
-    input <- hGetContents handle
-    return input
-
 putShowLn :: (Show a) => a -> IO ()
 putShowLn = putStrLn . show
 
 run :: Config a -> IO ()
 run config = do
-    input <- getInput
+    [filename] <- getArgs
+    handle <- openFile filename ReadMode
+    input <- hGetContents handle
     case runParser config.parser "" input of
         Right parsedInput -> do
             putStrLn "Part 1:"
