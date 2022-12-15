@@ -111,3 +111,10 @@ executable day-14
     build-depends:
         containers,
         extra
+
+executable day-15
+    import:           aoc-day
+    hs-source-dirs:   day-15
+    main-is:          Main.hs
+    build-depends:
+        containers,
