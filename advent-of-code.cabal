@@ -103,3 +103,11 @@ executable day-13
     import:           aoc-day
     hs-source-dirs:   day-13
     main-is:          Main.hs
+
+executable day-14
+    import:           aoc-day
+    hs-source-dirs:   day-14
+    main-is:          Main.hs
+    build-depends:
+        containers,
+        extra
