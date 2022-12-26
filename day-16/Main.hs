@@ -9,7 +9,8 @@ import Data.List.Extra
 import Data.Map (Map, (!))
 import qualified Data.Map as M
 import Data.Map.Internal.Debug
-import Data.Maybe (mapMaybe)
+import Data.Set (Set)
+import qualified Data.Set as S
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Utils
@@ -26,8 +27,8 @@ main =
     run $
         Config
             { parser = (mapWithDistances . M.fromList) <$> sepEndBy valve newline
-            , run1 = putShowLn . scorePath . part1
-            , run2 = putStrLn . showTree
+            , run1 = putStrLn . showTree . distinctPaths . part1
+            , run2 = putStrLn . showTree . distinctPaths . part2
             }
   where
     valve = do
@@ -70,38 +71,47 @@ data Path = Path
     , score :: Int
     , maxScore :: Int
     , time :: Int
-    , tail :: [Path]
+    , ptail :: [Path]
     }
     deriving (Show)
 
-countPaths :: Path -> Int
-countPaths (Path {tail = []}) = 1
-countPaths (Path {tail}) = sum $ map countPaths tail
-
 scorePath :: Path -> Int
-scorePath (Path {score, tail = []}) = score
-scorePath (Path {tail}) = maximum (map scorePath tail)
+scorePath (Path {score, ptail = []}) = score
+scorePath (Path {ptail, score, maxScore})
+    | score >= maxScore = maximum (map scorePath ptail)
+    | otherwise = 0
+
+distinctPaths :: Path -> Map (Set String) Int
+distinctPaths = collectPaths mempty mempty
+  where
+    collectPaths :: Set String -> Map (Set String) Int -> Path -> Map (Set String) Int
+    collectPaths path scores (Path {name, score, ptail = []}) = M.insert (S.insert name path) score scores
+    collectPaths path scores (Path {name, ptail}) = foldl' (collectPaths (S.insert name path)) scores ptail
 
 part1 :: Valves -> Path
-part1 = bestPath (Path "AA" 0 0 30 [])
+part1 = allPaths (Path "AA" 0 0 30 [])
+
+part2 :: Valves -> Path
+part2 = allPaths (Path "AA" 0 0 26 [])
+
+allPaths :: Path -> Valves -> Path
+allPaths p@Path {name, score, maxScore, time} valves = p'
   where
-    bestPath :: Path -> Valves -> Path
-    bestPath p@Path {name, score, maxScore, time} valves = p'
+    p' = p {ptail = map (\t -> t {maxScore = maxScore'}) ptail'}
+    maxScore' = maximum $ map (.score) ptail'
+    ptail'
+        | time == 0 = []
+        | otherwise = map neighborPath $ M.assocs nonZeroLinks
+
+    Valve {links} = valves ! name
+    nonZeroLinks = M.filterWithKey (\k _ -> M.findWithDefault False k $ M.map ((> 0) . (.flow)) valves) links
+
+    neighborPath :: (String, Int) -> Path
+    neighborPath (nName, nDist) = allPaths (Path nName newScore (max maxScore newScore) nTime []) valves'
       where
-        tail'
-            | time == 0 = []
-            | otherwise = mapMaybe neighborPath $ M.assocs validLinks
-        Valve {links} = valves ! name
-        validLinks = M.filterWithKey (\k _ -> M.findWithDefault False k $ M.map ((> 0) . (.flow)) valves) links
-        maxScore' = maximum $ map (.score) tail'
-        p' = p {tail = map (\t -> t {maxScore = maxScore'}) tail'}
-        neighborPath (nName, nDist)
-            | newScore >= maxScore = Just $ bestPath (Path nName newScore newScore nTime []) valves'
-            | otherwise = Nothing
-          where
-            Valve {flow = nFlow} = valves ! nName
-            valves' = M.adjust (\v -> v {flow = 0}) nName valves
-            newScore = score + nScore
-            (nScore, nTime)
-                | nFlow == 0 = (0, nDist)
-                | otherwise = (nFlow * (time - nDist - 1), time - nDist - 1)
+        Valve {flow} = valves ! nName
+        valves' = M.adjust (\v -> v {flow = 0}) nName valves
+        newScore = score + nScore
+        (nScore, nTime)
+            | flow == 0 = (0, nDist)
+            | otherwise = (flow * (time - nDist - 1), time - nDist - 1)

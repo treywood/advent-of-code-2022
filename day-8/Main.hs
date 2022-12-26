@@ -1,6 +1,6 @@
 module Main where
 
-import Data.List (singleton, transpose)
+import Data.List (transpose)
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Utils
@@ -12,7 +12,7 @@ main =
     run $
         Config
             { parser = do
-                rows :: [[Int]] <- sepEndBy (map (read . singleton) <$> some digitChar) newline
+                rows <- sepEndBy (some integer) newline
                 let cols = transpose rows
                 return [(r, c) | r <- rows, c <- cols]
             , run1 = putShowLn . part1
