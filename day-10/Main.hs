@@ -1,5 +1,6 @@
 module Main where
 
+import Data.Function ((&))
 import Data.List (singleton)
 import Data.List.Split (chunksOf)
 import Text.Megaparsec
@@ -19,7 +20,7 @@ main =
     noop = try $ string "noop" *> return [id]
 
 part1 :: [Int -> Int] -> Int
-part1 = foldl signalStrength 0 . zip [1 ..] . scanl (\x f -> f x) 1
+part1 = foldl signalStrength 0 . zip [1 ..] . scanl (&) 1
   where
     signalStrength :: Int -> (Int, Int) -> Int
     signalStrength acc (i, x)
@@ -31,7 +32,7 @@ part2 =
     chunksOf 40
         . map third
         . drop 1
-        . scanl (\x f -> f x) (1, 0, '#')
+        . scanl (&) (1, 0, '#')
         . map draw
   where
     draw :: (Int -> Int) -> (Int, Int, Char) -> (Int, Int, Char)
