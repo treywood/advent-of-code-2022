@@ -28,7 +28,7 @@ solution rope = length . nub . snd . runMoves rope
 runMoves :: [Point] -> [Char] -> ([Point], [Point])
 runMoves rope = foldl move (rope, [last rope])
   where
-    move (h : ts, ps) m = (rope', (last rope') : ps)
+    move (h : ts, ps) m = (rope', last rope' : ps)
       where
         h' = moveHead h m
         rope' = scanl moveTail h' ts

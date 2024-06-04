@@ -20,7 +20,7 @@ main =
             }
 
 part1 :: Grid -> Int
-part1 = length . (filter visible) . (zip [0 ..])
+part1 = length . filter visible . zip [0 ..]
   where
     visible :: (Int, ([Int], [Int])) -> Bool
     visible (i, (row, col)) = vis_n || vis_e || vis_s || vis_w
@@ -33,7 +33,7 @@ part1 = length . (filter visible) . (zip [0 ..])
         vis_w = all (< me) $ reverse (take row_i row)
 
 part2 :: Grid -> Int
-part2 = maximum . (map scenicScore) . (zip [0 ..])
+part2 = maximum . map scenicScore . zip [0 ..]
   where
     scenicScore :: (Int, ([Int], [Int])) -> Int
     scenicScore (i, (row, col)) = n * e * s * w
